@@ -1,5 +1,6 @@
 #file types
 *.DS_Store
+*.suo
 
 #specific files
 
