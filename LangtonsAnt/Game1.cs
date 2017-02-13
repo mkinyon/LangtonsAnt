@@ -21,6 +21,7 @@ namespace LangtonsAnt
         Matrix matrix;
         private KeyboardState oldState;
         List<UIControl> controls;
+        private int numOfSimulationsPerTick = 5;
 
         public Game1()
         {
@@ -87,7 +88,23 @@ namespace LangtonsAnt
             if ( GamePad.GetState( PlayerIndex.One ).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown( Keys.Escape ) )
                 Exit();
 
-            if ( oldState.IsKeyUp(Keys.A) && newState.IsKeyDown( Keys.A ) )
+            // input to increase simulations per tick
+            if ( oldState.IsKeyUp( Keys.Add ) && newState.IsKeyDown( Keys.Add ) )
+            {
+                numOfSimulationsPerTick += 5;
+            }
+
+            // input to decrease simulations per tick
+            if ( oldState.IsKeyUp( Keys.Subtract ) && newState.IsKeyDown( Keys.Subtract ) )
+            {
+                if ( numOfSimulationsPerTick >= 5 )
+                {
+                    numOfSimulationsPerTick -= 5;
+                }
+            }
+
+            // input to add logic step
+            if ( oldState.IsKeyUp( Keys.A ) && newState.IsKeyDown( Keys.A ) )
             {
                 var column = controls.Count / ( GraphicsDevice.DisplayMode.Height / 48 );
                 var row = controls.Count % (GraphicsDevice.DisplayMode.Height / 48);
@@ -97,7 +114,11 @@ namespace LangtonsAnt
 
             oldState = newState;
 
-            board.Update( gameTime );
+            for ( int i = 0; i < numOfSimulationsPerTick; i++ )
+            {
+                board.Update( gameTime );
+            }
+            
             base.Update( gameTime );
         }
 
@@ -114,7 +135,8 @@ namespace LangtonsAnt
             spriteBatch.End();
 
             spriteBatch.Begin();
-            spriteBatch.DrawString( font, "Iterations: " + board.GetSteps().ToString(), new Vector2( GraphicsDevice.DisplayMode.Width / 2, 50 ), Color.Black );
+            spriteBatch.DrawString( font, "Iterations: " + board.GetSteps().ToString(), new Vector2( GraphicsDevice.DisplayMode.Width / 2, 32 ), Color.Black );
+            spriteBatch.DrawString( font, "Iterations Per Tick: " + numOfSimulationsPerTick.ToString(), new Vector2( GraphicsDevice.DisplayMode.Width / 2, 57 ), Color.Black );
 
             foreach ( var controls in controls )
             {
