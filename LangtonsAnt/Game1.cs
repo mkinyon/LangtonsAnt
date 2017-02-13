@@ -12,7 +12,7 @@ namespace LangtonsAnt
     public class Game1 : Game
     {
         //must be power of 2
-        const int renderScale = 8;
+        const int renderScale = 2;
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -51,7 +51,8 @@ namespace LangtonsAnt
             controls.Add( new UIControl( 32, 32, Content, graphics.GraphicsDevice, Color.White ) );
             controls.Add( new UIControl( 32, 80, Content, graphics.GraphicsDevice, Color.Red ) );
 
-            board = new Board( Content, GraphicsDevice.DisplayMode.Width / renderScale, GraphicsDevice.DisplayMode.Height / renderScale, controls );
+            board = new Board( graphics.GraphicsDevice, Content, GraphicsDevice.DisplayMode.Width / renderScale, 
+                GraphicsDevice.DisplayMode.Height / renderScale, controls );
 
             base.Initialize();
         }
@@ -130,7 +131,7 @@ namespace LangtonsAnt
         {
             GraphicsDevice.Clear( Color.DarkSlateGray );
 
-            spriteBatch.Begin( transformMatrix: matrix );
+            spriteBatch.Begin( transformMatrix: matrix, samplerState: SamplerState.PointClamp );
             board.Draw( spriteBatch );
             spriteBatch.End();
 

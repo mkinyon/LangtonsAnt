@@ -16,6 +16,7 @@ namespace LangtonsAnt
         private int gridHeight;
         private Color[,] board;
         private Random rand = new Random();
+        private GraphicsDevice graphics;
         private ContentManager content;
         private Texture2D texture;
         private Vector2 origin;
@@ -32,9 +33,10 @@ namespace LangtonsAnt
         /// <param name="content"></param>
         /// <param name="gridWidth"></param>
         /// <param name="gridHeight"></param>
-        public Board( ContentManager content, int gridWidth, int gridHeight, List<UIControl> controls )
+        public Board( GraphicsDevice graphics, ContentManager content, int gridWidth, int gridHeight, List<UIControl> controls )
         {
             this.controls = controls;
+            this.graphics = graphics;
             this.content = content;
             texture = content.Load<Texture2D>( "Colors" );
             origin = new Vector2( texture.Width / 2, texture.Height / 2 );
@@ -138,16 +140,24 @@ namespace LangtonsAnt
         /// <param name="spriteBatch"></param>
         public void Draw( SpriteBatch spriteBatch )
         {
+            // create a new temporary texture..
+            Texture2D texture = new Texture2D( graphics, gridWidth, gridHeight );
+            Color[] data = new Color[gridWidth * gridHeight];
+
+            // ..and for each pixel, assign the color from the board
             for ( int x = 0; x < gridWidth; x++ )
             {
                 for ( int y = 0; y < gridHeight; y++ )
                 {
-                    if ( true )
-                    {
-                        spriteBatch.Draw( texture, new Vector2( x + 2, y + 2 ), new Rectangle( 3, 3, 1, 1 ), board[x,y], 0f, origin, 1f, SpriteEffects.None, 0f );
-                    }
+                    data[x + y * gridWidth] = board[x, y];
                 }
             }
+
+            // set color data to texture
+            texture.SetData( data );
+
+            // draw texture
+            spriteBatch.Draw( texture, new Rectangle( 0, 0, gridWidth, gridHeight ), Color.White );
         }
     }
 }
