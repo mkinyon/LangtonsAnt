@@ -18,12 +18,13 @@ namespace LangtonsAnt
         private Random rand = new Random();
         private ContentManager content;
         private Texture2D texture;
-        Vector2 origin;
+        private Vector2 origin;
 
-        float timeSinceLastTick;
+        private float timeSinceLastTick;
         private int stepCount;
 
         private Ant ant;
+        private List<UIControl> controls;
 
         /// <summary>
         /// Contructor
@@ -31,8 +32,9 @@ namespace LangtonsAnt
         /// <param name="content"></param>
         /// <param name="gridWidth"></param>
         /// <param name="gridHeight"></param>
-        public Board( ContentManager content, int gridWidth, int gridHeight )
+        public Board( ContentManager content, int gridWidth, int gridHeight, List<UIControl> controls )
         {
+            this.controls = controls;
             this.content = content;
             texture = content.Load<Texture2D>( "Colors" );
             origin = new Vector2( texture.Width / 2, texture.Height / 2 );
@@ -58,22 +60,48 @@ namespace LangtonsAnt
         /// </summary>
         public void Simulate()
         {
+            var counter = 0;
             var currentPosition = ant.GetCurrentPosition();
             var currentDirection = ant.GetCurrentDirection();
             
             if ( currentPosition.X > 0 && currentPosition.X <= gridWidth &&
                     currentPosition.Y > 0 && currentPosition.Y <= gridHeight )
             {
-                //change current square color
-                if ( board[( int ) currentPosition.X, ( int ) currentPosition.Y] == Color.White )
+                // iterate through each control
+                foreach ( var control in controls )
                 {
-                    board[( int ) currentPosition.X, ( int ) currentPosition.Y] = Color.Red;
-                    ant.MoveLeft();
-                }
-                else
-                {
-                    board[( int ) currentPosition.X, ( int ) currentPosition.Y] = Color.White;
-                    ant.TurnRight();
+                    counter++; 
+
+                    // if we find a matching color..
+                    if ( board[( int ) currentPosition.X, ( int ) currentPosition.Y] == control.CurrentColor )
+                    {
+                        if ( counter < controls.Count )
+                        {
+                            // ..change that square to the next color on our control list
+                            board[( int ) currentPosition.X, ( int ) currentPosition.Y] = controls.Select( c => c.CurrentColor ).ElementAt( counter );
+                        }
+                        else
+                        {
+                            // ..else change the color back to the first control on the list
+                            board[( int ) currentPosition.X, ( int ) currentPosition.Y] = controls.Select( c => c.CurrentColor ).First();
+                        }
+                        
+                        // change the ant's direction based on the direction of the control
+                        if ( control.CurrentDirection == UIControl.TurnDirection.Left )
+                        {
+                            ant.MoveLeft();
+                        }
+                        else
+                        {
+                            ant.MoveRight();
+                        }
+
+                        // update control step counter
+                        control.StepCounter++;
+
+                        // since we have a successfully found and processed a match.. break!
+                        break;
+                    }
                 }
             }
 

@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
+
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -17,7 +19,8 @@ namespace LangtonsAnt
         SpriteFont font;
         Board board;
         Matrix matrix;
-        bool isPaused = false;
+        private KeyboardState oldState;
+        List<UIControl> controls;
 
         public Game1()
         {
@@ -38,7 +41,16 @@ namespace LangtonsAnt
             graphics.IsFullScreen = true;
             graphics.ApplyChanges();
 
-            board = new Board( Content, GraphicsDevice.DisplayMode.Width / renderScale, GraphicsDevice.DisplayMode.Height / renderScale );
+            // disable frame cap
+            IsFixedTimeStep = false;
+
+            controls = new List<UIControl>();
+
+            // First control must always be white
+            controls.Add( new UIControl( 32, 32, Content, graphics.GraphicsDevice, Color.White ) );
+            controls.Add( new UIControl( 32, 80, Content, graphics.GraphicsDevice, Color.Red ) );
+
+            board = new Board( Content, GraphicsDevice.DisplayMode.Width / renderScale, GraphicsDevice.DisplayMode.Height / renderScale, controls );
 
             base.Initialize();
         }
@@ -70,21 +82,22 @@ namespace LangtonsAnt
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update( GameTime gameTime )
         {
-            var state = Mouse.GetState();
+            KeyboardState newState = Keyboard.GetState();
 
             if ( GamePad.GetState( PlayerIndex.One ).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown( Keys.Escape ) )
                 Exit();
 
-            if ( state.MiddleButton == ButtonState.Pressed )
+            if ( oldState.IsKeyUp(Keys.A) && newState.IsKeyDown( Keys.A ) )
             {
-                isPaused = !isPaused;
+                var column = controls.Count / ( GraphicsDevice.DisplayMode.Height / 48 );
+                var row = controls.Count % (GraphicsDevice.DisplayMode.Height / 48);
+
+                controls.Add( new UIControl( (column  * 128) + 32, ( ( row + 1 ) * 48 ) - 16, Content, graphics.GraphicsDevice ) );
             }
 
-            if ( !isPaused )
-            {
-                board.Update( gameTime );
-            }
+            oldState = newState;
 
+            board.Update( gameTime );
             base.Update( gameTime );
         }
 
@@ -97,13 +110,17 @@ namespace LangtonsAnt
             GraphicsDevice.Clear( Color.DarkSlateGray );
 
             spriteBatch.Begin( transformMatrix: matrix );
-            
             board.Draw( spriteBatch );
-
             spriteBatch.End();
 
             spriteBatch.Begin();
-            spriteBatch.DrawString( font, "Steps: " + board.GetSteps().ToString(), new Vector2( 50, 50 ), Color.Black );
+            spriteBatch.DrawString( font, "Iterations: " + board.GetSteps().ToString(), new Vector2( GraphicsDevice.DisplayMode.Width / 2, 50 ), Color.Black );
+
+            foreach ( var controls in controls )
+            {
+                controls.Draw( spriteBatch );
+            }
+
             spriteBatch.End();
 
             base.Draw( gameTime );
