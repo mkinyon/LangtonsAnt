@@ -87,7 +87,7 @@ namespace LangtonsAnt
         /// <summary>
         /// Turns the ant to the right and moves forward one space.
         /// </summary>
-        public void TurnRight()
+        public void MoveRight()
         {
             if ( currentDirection == Direction.W )
             {
