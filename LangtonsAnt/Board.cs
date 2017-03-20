@@ -19,6 +19,7 @@ namespace LangtonsAnt
         private GraphicsDevice graphics;
         private ContentManager content;
         private Texture2D texture;
+        private Texture2D backBuffer;
         private Vector2 origin;
 
         private float timeSinceLastTick;
@@ -37,6 +38,7 @@ namespace LangtonsAnt
         {
             this.controls = controls;
             this.graphics = graphics;
+            backBuffer = new Texture2D( graphics, gridWidth, gridHeight );
             this.content = content;
             texture = content.Load<Texture2D>( "Colors" );
             origin = new Vector2( texture.Width / 2, texture.Height / 2 );
@@ -141,7 +143,6 @@ namespace LangtonsAnt
         public void Draw( SpriteBatch spriteBatch )
         {
             // create a new temporary texture..
-            Texture2D texture = new Texture2D( graphics, gridWidth, gridHeight );
             Color[] data = new Color[gridWidth * gridHeight];
 
             // ..and for each pixel, assign the color from the board
@@ -154,10 +155,10 @@ namespace LangtonsAnt
             }
 
             // set color data to texture
-            texture.SetData( data );
+            backBuffer.SetData( data );
 
             // draw texture
-            spriteBatch.Draw( texture, new Rectangle( 0, 0, gridWidth, gridHeight ), Color.White );
+            spriteBatch.Draw( backBuffer, new Rectangle( 0, 0, gridWidth, gridHeight ), Color.White );
         }
     }
 }
